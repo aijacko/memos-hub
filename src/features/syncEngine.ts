@@ -141,6 +141,9 @@ export async function runSync(
         if (outcome.truncated) {
           new Notice(t('NOTICE_FETCH_TRUNCATED', { account }), 10000);
         }
+        if (outcome.localEmpty) {
+          new Notice(t('NOTICE_LOCAL_EMPTY', { account }), 12000);
+        }
         if (outcome.failures > 0) {
           new Notice(t('NOTICE_WRITE_FAILED', { account, n: outcome.failures }), 8000);
           result.failures.push({ profileId: profile.id, name: account, message: t('NOTICE_WRITE_FAILED', { account, n: outcome.failures }) });

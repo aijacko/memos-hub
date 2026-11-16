@@ -54,6 +54,8 @@ export interface FileSyncOutcome {
   movedToDeleted: number;
   /** The API returned more pages than MAX_PAGES; results may be incomplete. */
   truncated: boolean;
+  /** A cursor exists but no synced note is left locally; a force sync is needed to rebuild. */
+  localEmpty: boolean;
 }
 
 export interface VaultIndex {
@@ -76,12 +78,13 @@ function isArchived(memo: NormalizedMemo): boolean {
 
 async function fetchAll(
   ctx: FileSyncContext,
+  fullFetch: boolean,
 ): Promise<{ memos: NormalizedMemo[]; rawUids: Set<string>; truncated: boolean }> {
-  const { profile, mode, api, state, cancel, reporter } = ctx;
+  const { profile, api, state, cancel, reporter } = ctx;
   const profileName = profile.name.trim() || profile.id;
   const daysLimit = profile.syncDaysLimit ?? 0;
   const cutoff = daysLimit > 0 ? Math.floor(Date.now() / 1000) - daysLimit * 86400 : 0;
-  const lastSync = mode === 'force' ? 0 : state.getCursor('file', profile.id);
+  const lastSync = fullFetch ? 0 : state.getCursor('file', profile.id);
 
   const created = createdTsFilter(cutoff);
   const updated = updatedTsFilter(lastSync);
@@ -174,6 +177,7 @@ export async function syncFileMode(ctx: FileSyncContext): Promise<FileSyncOutcom
     deletedLocally: 0,
     movedToDeleted: 0,
     truncated: false,
+    localEmpty: false,
   };
 
   const index = await buildIndex(ctx, root);
@@ -183,7 +187,18 @@ export async function syncFileMode(ctx: FileSyncContext): Promise<FileSyncOutcom
   const daysLimit = profile.syncDaysLimit ?? 0;
   const cutoff = daysLimit > 0 ? Math.floor(Date.now() / 1000) - daysLimit * 86400 : 0;
 
-  const { memos, rawUids, truncated } = await fetchAll(ctx);
+  // A cursor plus an empty sync folder means the notes were removed outside the
+  // plugin (reinstall, manual cleanup). Incremental runs then write nothing, so
+  // tell the user how to rebuild instead of reporting a silent success.
+  const ownNotes = Array.from(index.byUid.keys())
+    .filter(uid => belongsToProfile(ctx, index, uid)).length;
+  const fullFetch = ctx.mode === 'force';
+  const localEmpty = !fullFetch
+    && state.getCursor('file', profile.id) > 0
+    && ownNotes === 0
+    && ignored.size === 0;
+
+  const { memos, rawUids, truncated } = await fetchAll(ctx, fullFetch);
   outcome.truncated = truncated;
   if (cancel.isCancelled) {
     outcome.cancelled = true;
@@ -199,8 +214,9 @@ export async function syncFileMode(ctx: FileSyncContext): Promise<FileSyncOutcom
       || (settings.skipArchivedMemos && isArchived(memo))
       || !matchesTagFilter(extractMemoTags(memo), tagFilter);
     // A memo whose note disappeared from the vault was deleted by the user:
-    // remember it instead of writing the file again.
-    if (!skip && known.has(memo.uid) && !index.byUid.has(memo.uid)) {
+    // remember it instead of writing the file again. A full rebuild (force or
+    // automatic restore) intentionally recreates everything.
+    if (!skip && !fullFetch && known.has(memo.uid) && !index.byUid.has(memo.uid)) {
       ignored.add(memo.uid);
       ignoredDirty = true;
       outcome.deletedLocally++;
@@ -258,22 +274,10 @@ export async function syncFileMode(ctx: FileSyncContext): Promise<FileSyncOutcom
     outcome.movedToDeleted = await moveDeletedMemos(ctx, index, root, alive);
   }
 
-  // Local deletion protection: a memo that still exists on the server but whose
-  // note disappeared from the vault must not be recreated.
-  const ignoredAdded: string[] = [];
-  for (const uid of known) {
-    if (!rawUids.has(uid) || present.has(uid) || ignored.has(uid)) continue;
-    ignored.add(uid);
-    ignoredAdded.push(uid);
-  }
-  if (ignoredAdded.length > 0) {
-    ignoredDirty = true;
-    outcome.deletedLocally += ignoredAdded.length;
-  }
   if (ignoredDirty) state.setIgnored(profile.id, Array.from(ignored));
+  outcome.localEmpty = localEmpty && outcome.written === 0 && outcome.failures === 0;
 
-  // Keep uids we have ever seen on disk: incremental runs do not fetch them, so
-  // dropping them here would let a later force sync recreate a deleted note.
+  // Keep uids we have ever seen on disk: incremental runs do not fetch them.
   const knownNext = new Set<string>(known);
   for (const uid of writtenUids) knownNext.add(uid);
   for (const uid of rawUids) {

@@ -63,7 +63,8 @@ export default class MemosHubPlugin extends Plugin implements SettingsUiHost {
     this.settingsTab = new MemosHubSettingTab(this);
     this.addSettingTab(this.settingsTab);
 
-    this.addRibbonIcon('notebook-pen', t('CMD_QUICK_CAPTURE'), () => this.openQuickCapture());
+    this.addRibbonIcon('sync', t('SYNC_MEMOS'), () => this.startSync('smart'));
+    this.addRibbonIcon('message-square-plus', t('CMD_QUICK_CAPTURE'), () => this.openQuickCapture());
     this.registerCommands();
     this.registerMenus();
 

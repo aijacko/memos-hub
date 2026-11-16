@@ -183,6 +183,25 @@ test('case 13b: a deleted note is still ignored after an incremental run', async
   assert.ok(first.state.getIgnored(first.profile.id).includes('aaa'));
 });
 
+test('case 40: a force sync rebuilds notes deleted while the plugin was unloaded', async () => {
+  const { notes, state, profile, ctx } = setup({ memos: [rawMemo('aaa', '远端内容')], mode: 'force' });
+  state.setKnown(profile.id, ['aaa']);
+  const outcome = await syncFileMode(ctx);
+  assert.equal(outcome.written, 1);
+  assert.ok(notes.paths().some(path => path.startsWith('Memos/2026-11-10')));
+  assert.deepEqual(state.getIgnored(profile.id), []);
+});
+
+test('case 41: smart sync points at force sync when no local note is left', async () => {
+  const { state, profile, ctx } = setup({ memos: [] });
+  state.setCursor('file', profile.id, SECONDS + 60);
+  state.setKnown(profile.id, ['aaa']);
+  const outcome = await syncFileMode(ctx);
+  assert.equal(outcome.written, 0);
+  assert.equal(outcome.localEmpty, true);
+  assert.equal(state.getIgnored(profile.id).length, 0);
+});
+
 test('case 14: multi-account sync prefixes new file names', async () => {
   const { notes, ctx } = setup({ memos: [rawMemo('aaa', '内容')], multiAccount: true });
   await syncFileMode(ctx);

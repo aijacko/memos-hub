@@ -238,6 +238,7 @@ export const en: Record<TranslationKey, string> = {
   NOTICE_FETCH_TRUNCATED: '"{account}" has more memos than a single run can fetch; this sync is partial. Narrow the sync day range and retry',
   NOTICE_CONFLICT_BACKUP: 'Detected {n} local edit(s); backed up to "{dir}"',
   NOTICE_LOCAL_DELETED: '{n} note(s) of "{account}" were deleted locally and will not be recreated (clear the ignore list in the settings)',
+  NOTICE_LOCAL_EMPTY: 'No synced notes are left locally for "{account}", so there was nothing to update; use "Force sync" to import every memo again',
   NOTICE_WRITE_FAILED: '{n} write(s) failed for "{account}"; the cursor stopped before them and the next sync retries',
   NOTICE_MISSING_HEADER: '{n} daily note(s) lack the heading "{header}" and were skipped. Add the heading to your daily note template and sync again.',
   NOTICE_DAILY_CONFLICT: '{n} local daily-note edit(s) of "{account}" were overwritten by a newer remote version; the original is backed up in "{dir}"',

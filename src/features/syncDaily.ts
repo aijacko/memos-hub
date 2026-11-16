@@ -117,7 +117,8 @@ export async function syncDailyMode(ctx: DailySyncContext): Promise<DailySyncOut
   const cursor = ctx.mode === 'force' ? 0 : storedCursor;
   const daysLimit = profile.syncDaysLimit ?? 0;
   const cutoff = daysLimit > 0 ? Math.floor(Date.now() / 1000) - daysLimit * 86400 : 0;
-  const ignored = new Set(state.getIgnored(profile.id));
+  // Force sync rebuilds everything, so the local-delete ignore list does not apply.
+  const ignored = new Set(ctx.mode === 'force' ? [] : state.getIgnored(profile.id));
   const tagFilter = buildTagFilter(settings.includeTags, settings.excludeTags);
   const knownMissDays = new Set(state.getHeaderMiss(profile.id));
   let missDirty = false;

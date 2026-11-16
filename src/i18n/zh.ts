@@ -243,6 +243,7 @@ export const zh = {
   NOTICE_FETCH_TRUNCATED: '「{account}」的备忘数量超过单次拉取上限，本次为部分同步；可缩小「同步天数范围」后重试',
   NOTICE_CONFLICT_BACKUP: '检测到 {n} 个本地修改，已备份到「{dir}」',
   NOTICE_LOCAL_DELETED: '「{account}」有 {n} 篇笔记已从库中删除，后续同步不会再重建（可在设置中清除忽略清单）',
+  NOTICE_LOCAL_EMPTY: '「{account}」本地已没有已同步的笔记，本次没有可增量更新的内容；如需重新导入全部备忘，请点「强制同步」',
   NOTICE_WRITE_FAILED: '「{account}」有 {n} 条写入失败，同步位置已停在失败之前，下次同步会重试',
   NOTICE_MISSING_HEADER: '有 {n} 篇日记未找到标题「{header}」，已跳过写入。请在日记模板中加入该标题后重新同步。',
   NOTICE_DAILY_CONFLICT: '「{account}」有 {n} 处日记内容被本地改过，远端版本较新已覆盖，原内容备份到「{dir}」',
