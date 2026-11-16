@@ -1,6 +1,6 @@
 {
   "name": "memos-hub",
-  "version": "1.0.3",
+  "version": "1.0.2",
   "description": "Obsidian plugin for syncing Memos with per-file/daily-note modes, multi-account support, AI cleanup and Memos API compatibility",
   "main": "main.js",
   "scripts": {
