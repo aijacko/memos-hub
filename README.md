@@ -128,6 +128,11 @@ Build output is `main.js`, `manifest.json`, `styles.css`. Copy them into a test 
 
 ## Changelog
 
+### 1.0.2
+
+- Cleared the remaining type-safety findings from the directory code scan
+- moment stays pinned at 2.31.0
+
 ### 1.0.1
 
 - English plugin description, matching the community directory requirements
