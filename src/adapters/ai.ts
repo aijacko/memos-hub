@@ -171,8 +171,8 @@ export class AIService {
         const result = data?.choices?.[0]?.message?.content?.trim();
         if (result) {
           if (this.cache.size >= CACHE_LIMIT) {
-            const oldest = this.cache.keys().next().value as string | undefined;
-            if (oldest !== undefined) this.cache.delete(oldest);
+            const first = this.cache.keys().next();
+            if (!first.done) this.cache.delete(first.value);
           }
           this.cache.set(cacheKey, result);
           return result;

@@ -4,11 +4,17 @@ import { App, TFile, moment } from 'obsidian';
 import { createDailyNote, getAllDailyNotes, getDailyNote } from 'obsidian-daily-notes-interface';
 import type { DailyNoteStorePort } from '../ports';
 
+// Obsidian exposes moment at runtime but types it through a namespace import,
+// which some type-aware linters resolve as `any`. Anchor it to the Moment type
+// the daily-notes library expects, without importing the moment package.
+type DayMoment = Parameters<typeof getDailyNote>[0];
+const parseDay = moment as unknown as (input: string, format: string) => DayMoment;
+
 export class ObsidianDailyNotes implements DailyNoteStorePort {
   constructor(private app: App) {}
 
   find(date: string): string | null {
-    const day = moment(date, 'YYYY-MM-DD');
+    const day = parseDay(date, 'YYYY-MM-DD');
     if (!day.isValid()) return null;
     const note = getDailyNote(day, getAllDailyNotes());
     // The library bundles its own obsidian.d.ts, so narrow with instanceof.
@@ -16,7 +22,7 @@ export class ObsidianDailyNotes implements DailyNoteStorePort {
   }
 
   async create(date: string): Promise<string | null> {
-    const day = moment(date, 'YYYY-MM-DD');
+    const day = parseDay(date, 'YYYY-MM-DD');
     if (!day.isValid()) return null;
     const note = await createDailyNote(day);
     return note instanceof TFile ? note.path : null;
