@@ -1,9 +1,9 @@
 {
 	"id": "memos-hub",
 	"name": "Memos Hub",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"minAppVersion": "1.8.7",
-	"description": "Sync Memos notes into your vault and send notes back to Memos, with multi-account support, daily notes or one file per memo, tag filters and AI cleanup.",
+	"description": "Two-way Memos sync: multiple accounts, one file per memo or daily notes, three sync actions, send notes back, AI cleanup, tag and archive filters, attachment download, and protection for local edits and deletions.",
 	"author": "aijacko",
 	"authorUrl": "https://github.com/aijacko",
 	"isDesktopOnly": true
