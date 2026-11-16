@@ -1,158 +1,156 @@
 # Memos Hub
 
-把 [Memos](https://github.com/usememos/memos) 的备忘同步进 Obsidian，也能把 Obsidian 里的内容一键发送回 Memos。
+Sync your [Memos](https://github.com/usememos/memos) into Obsidian — and send notes from Obsidian back to Memos.
 
-支持**多账户**、**独立文件 / 每日日记**两种存储方式、**增量同步**、**AI 整理**、**标签与归档过滤**、**附件下载**，并针对「本地改过的笔记被覆盖」「删掉的笔记又被重建」做了保护。
+Multi-account support, **per-file** and **daily-note** storage, incremental sync, optional **AI cleanup**, tag/archive filtering, attachment download, plus safeguards for locally edited and locally deleted notes.
 
-[English](README-en.md) | 简体中文
+English | [简体中文](README-zh.md)
 
 ---
 
-## 功能
+## Features
 
-### 同步 Memos → Obsidian
+### Memos → Obsidian
 
-- **两种存储模式**
-  - **独立文件**：一条备忘生成一篇 Markdown，支持按年 / 年-月分层、自定义文件名格式
-  - **每日日记**：把当天的备忘聚合写入 Daily Note，保留 todo 勾选状态、就地更新
-- **三种同步方式**：智能同步（有记录走增量，否则全量）、增量同步、强制同步（重写全部 + 清理服务端已删除的备忘）
-- **多账户**：每个账户可单独配置 URL、令牌、同步天数、接口版本；多个账户写入同一目录时自动加账户名前缀
-- **接口自动适配**：Memos 26.10+ 使用 `/api`，旧版（≤0.24）使用 `/api/v1`，插件自动探测并缓存
-- **增量过滤**：按 `updated_ts` 只拉取变化的备忘，失败时逐级降级（`created_ts` → 无过滤）并在客户端二次校验
-- **YAML 属性**：写入 `memo_id`、`account`、`created`、`updated`、`visibility`、`pinned`、`tags`；用户自己添加的 `status:`、`rating:` 等字段同步时原样保留
-- **过滤**：只同步 / 排除指定标签，跳过归档备忘
-- **附件**：图片等资源下载到本地附件目录并以 `![[...]]` 嵌入，下载失败的附件不会生成死链
-- **同步进度**：同步期间常驻提示当前账户与写入进度，可随时取消
+- **Two storage modes**
+  - **Per-file**: one Markdown file per memo, optional year / year-month folders and custom file-name format
+  - **Daily note**: memos appended into your Daily Note, updated in place with todo checkbox state preserved
+- **Three sync actions**: Smart sync (incremental when a cursor exists, otherwise full), Incremental, Force (rewrite everything and archive memos deleted on the server)
+- **Multiple accounts**, each with its own URL, token, sync-days limit and API mode; notes from several accounts in one folder are prefixed with the account name
+- **Automatic API detection**: `/api` for Memos 26.10+, `/api/v1` for older servers; the working prefix is cached
+- **Incremental filtering** by `updated_ts`, with graceful fallback (`created_ts` → no filter) and client-side re-validation
+- **YAML properties**: `memo_id`, `account`, `created`, `updated`, `visibility`, `pinned`, `tags`; any extra keys you add (`status:`, `rating:`, …) are preserved on every rewrite
+- **Filters**: include / exclude tags, skip archived memos
+- **Attachments** downloaded to a local folder and embedded as `![[...]]`; failed downloads never produce broken links
+- **Progress & cancel**: a persistent notice shows the current account and write progress, and the sync can be cancelled
 
-### 发送 Obsidian → Memos
+### Obsidian → Memos
 
-| 命令 | 说明 |
+| Command | Description |
 | --- | --- |
-| 快速记录到 Memos | 侧边栏图标，弹窗输入，支持私密 / 登录可见 / 公开 |
-| 发送选中文本到 Memos | 编辑器右键；没有选区时取当前行 |
-| 发送当前笔记到 Memos | 编辑器 / 文件列表右键，发送整篇笔记 |
+| Quick capture to Memos | Ribbon icon, modal input, private / protected / public |
+| Send selection to Memos | Editor context menu; falls back to the current line |
+| Send current note to Memos | Editor / file explorer context menu |
 
-多账户时先选择发送账户，单账户直接发送。
+With several accounts you pick the target account first; with one account it sends directly.
 
-### AI 整理（可选）
+### Optional AI cleanup
 
-支持 LM Studio、DeepSeek、OpenAI 与自定义 OpenAI 兼容接口。同步时可调用模型按自定义提示词蒸馏内容，并可自动追加标签或生成摘要。
+Works with LM Studio, DeepSeek, OpenAI and any OpenAI-compatible endpoint. A customizable prompt can distill memo content during sync, with optional auto-tagging and summaries.
 
-### 数据安全
+### Data safety
 
-- **本地修改保护**：笔记正文被手动改过时，先把原文件备份到 `_冲突/` 再覆盖，同步结束汇总数量
-- **本地删除保护**：在库里删掉的备忘不会被下次同步重新创建，可在设置里清除忽略清单
-- **已删除备忘归档**：服务端删除的备忘移入 `_已删除/`，而不是直接从库中删除
-- **失败可见**：某个账户离线或令牌失效不会中断整轮同步，设置页常驻显示上次失败的账户与原因
-
----
-
-## 安装
-
-### 社区插件市场
-
-在 Obsidian 中打开「设置 → 第三方插件 → 浏览」，搜索 **Memos Hub** 安装并启用。
-
-### 手动安装
-
-1. 从 [Releases](https://github.com/aijacko/memos-hub/releases) 下载 `main.js`、`manifest.json`、`styles.css`
-2. 放入 `<你的库>/.obsidian/plugins/memos-hub/`
-3. 重启 Obsidian，在「第三方插件」中启用 **Memos Hub**
-
-> 插件仅支持桌面端（Windows / macOS / Linux），需要 Obsidian 1.8.7 或更高版本。
+- **Local edit protection**: if a note body was edited locally, the original is backed up to `_冲突/` before being overwritten, and the count is reported after sync
+- **Local delete protection**: notes you deleted in your vault are not recreated by later syncs; the ignore list can be cleared in settings
+- **Deleted memo archive**: memos removed on the server are moved to `_已删除/` instead of being deleted from your vault
+- **Visible failures**: one offline account or invalid token no longer aborts the whole run; the settings page keeps showing which accounts failed and why
 
 ---
 
-## 快速开始
+## Installation
 
-1. **获取 Memos 访问令牌**：登录 Memos → 设置 → 访问令牌（Access Tokens）→ 新建，复制生成的 `memos_...` 令牌
-2. 在 Obsidian 打开「设置 → Memos Hub → 账户」，填写：
-   - 账户名称
-   - 服务器地址，例如 `https://memos.example.com`（自建默认 `http://localhost:5230`）
-   - API 令牌
-3. 点「测试连接」，成功后提示会附带实际使用的接口前缀
-4. 到「同步」选项卡选择存储模式，点「智能同步」开始首次同步
+### Community plugins
+
+In Obsidian, open **Settings → Community plugins → Browse**, search for **Memos Hub**, install and enable it.
+
+### Manual installation
+
+1. Download `main.js`, `manifest.json` and `styles.css` from [Releases](https://github.com/aijacko/memos-hub/releases)
+2. Put them into `<your vault>/.obsidian/plugins/memos-hub/`
+3. Restart Obsidian and enable **Memos Hub** under Community plugins
+
+> Desktop only (Windows / macOS / Linux); requires Obsidian 1.8.7 or newer.
 
 ---
 
-## 设置说明
+## Getting started
 
-设置页分为五个选项卡：
+1. **Create an access token**: Memos → Settings → Access Tokens → Create, then copy the `memos_...` token
+2. In Obsidian open **Settings → Memos Hub → Accounts** and fill in:
+   - Account name
+   - Server URL, e.g. `https://memos.example.com` (self-hosted default: `http://localhost:5230`)
+   - API token
+3. Click **Test connection** — a successful message also shows the API prefix in use
+4. Go to the **Sync** tab, choose a storage mode and run **Smart sync**
 
-| 选项卡 | 内容 |
+---
+
+## Settings overview
+
+| Tab | Contents |
 | --- | --- |
-| 账户 | 多账户增删、服务器地址、令牌、接口版本、同步天数、接收发送的账户 |
-| 同步 | 三个同步按钮、上次同步时间与失败信息、存储模式、目录结构、文件名格式、YAML 属性、清理与维护、自动同步 |
-| 过滤与自动化 | 附件目录、跳过图片、跳过归档、标签包含 / 排除 |
-| AI 设置 | 供应商、模型、提示词、自动标签、智能摘要 |
-| 关于 | 简介、仓库与反馈链接、版本号、恢复默认设置 |
+| Accounts | Add/remove accounts, server URL, token, API mode, sync-days limit, default sending account |
+| Sync | Sync buttons, last-sync time and failures, storage mode, folder layout, file-name format, YAML properties, maintenance, auto sync |
+| Filters & automation | Attachment folder, skip images, skip archived, include / exclude tags |
+| AI | Provider, model, prompt, auto tags, smart summary |
+| About | Intro, repository and issue links, version, restore defaults |
 
-**自动同步**：可在启动时自动同步（默认开启，可设延迟、可跳过当天已同步），也可设定时同步间隔（分钟，`0` 表示关闭）。
-
----
-
-## 常见问题
-
-**连接失败 / 410 Gone？**
-先确认服务器地址可访问。Memos 26.10+ 的接口前缀是 `/api`，旧版本是 `/api/v1`；「Memos 接口版本」保持 `自动检测` 即可，也可按服务端版本手动指定。
-
-**同步后笔记被覆盖了？**
-正文被本地修改过的文件，覆盖前会备份到同步目录下的 `_冲突/`（重名自动加时间戳）。可在「同步 → 清理与维护」中打开该目录或清理 N 天前的备份。
-
-**删掉的笔记又回来了？**
-删除过的笔记不会被后续同步重建。若需要恢复，在「清理与维护」中点「清除忽略清单」，下次同步会重新生成。
-
-**笔记里的自定义属性没了？**
-插件只重写自己管理的 8 个属性键，其余字段会原样保留。若仍异常，请附上笔记头部的 frontmatter 提 issue。
-
-**附件没有下载？**
-确认附件目录可写、「跳过图片」未开启；下载失败的附件只记录警告，不会生成指向不存在文件的链接。
-
-**改了标签过滤，旧备忘没同步过来？**
-过滤规则只影响之后的增量拉取；想立刻按新规则补齐或重写，执行一次「强制同步」即可。日记模式下被过滤的备忘块不会被删除。
-
-**隐私**
-插件不含任何遥测：数据只在你配置的 Memos 服务与（可选的）AI 服务之间传输；令牌与 API 密钥仅保存在本地库的 `data.json` 中，不会写入日志或提示。
+**Auto sync**: sync on startup (on by default, with configurable delay and a "skip if already synced today" option), plus an optional periodic interval in minutes (`0` disables it).
 
 ---
 
-## 开发
+## FAQ
+
+**Connection fails / 410 Gone?**
+Check that the server URL is reachable. Memos 26.10+ serves `/api` while older versions serve `/api/v1`; leave **API version** on *Auto detect*, or set it manually to match your server.
+
+**My notes were overwritten.**
+Files whose body was edited locally are backed up to `_冲突/` (duplicates get a timestamp prefix) before being rewritten. Use **Sync → Maintenance** to open that folder or delete backups older than N days.
+
+**A note I deleted came back.**
+Deleted notes are never recreated by later syncs. To restore them, click **Clear ignore list** under Maintenance and the next sync will rebuild them.
+
+**My custom properties disappeared.**
+The plugin only rewrites the eight keys it owns and preserves everything else. If you still see issues, please open an issue and include the note's frontmatter.
+
+**Attachments are not downloaded.**
+Make sure the attachment folder is writable and **Skip images** is off. Failed downloads are logged as warnings and never create links to missing files.
+
+**I changed the tag filter but old memos did not sync.**
+Filters only affect later incremental pulls. Run a **Force sync** to backfill or rewrite everything under the new rules. In daily-note mode, blocks of filtered-out memos are never deleted.
+
+**Privacy**
+There is no telemetry. Data only travels between your vault, the Memos server you configure and the optional AI service. Tokens and API keys live in the local `data.json` and never appear in logs or notices.
+
+---
+
+## Development
 
 ```bash
 npm install
-npm run dev    # 监听编译
-npm run build  # 类型检查 + 生产构建
+npm run dev    # watch build
+npm run build  # type check + production build
 ```
 
-构建产物为 `main.js`、`manifest.json`、`styles.css`。开发时将三个文件放到测试库的 `.obsidian/plugins/memos-hub/` 即可。
+Build output is `main.js`, `manifest.json`, `styles.css`. Copy them into a test vault's `.obsidian/plugins/memos-hub/` while developing.
 
 ---
 
-## 更新日志
+## Changelog
 
 ### 1.0.2
 
-- 重写 AI 内置提示词：保持原文语言，原样保留链接、代码、任务勾选框与已有标签，禁止扩写
-- 内置提示词支持中英双语，随界面语言自动切换
+- Rewrote the built-in AI prompt: keep the original language and preserve links, code, task checkboxes and existing tags; no padding or added headings
+- The built-in prompt is now bilingual and follows the interface language
 
 ### 1.0.1
 
-- 插件描述改为英文，符合社区插件目录的展示与审核要求
-- 删除账户时清理该账户的缺标题记录，避免配置残留
+- English plugin description, matching the community directory requirements
+- Removing a profile now clears its missing-header records from the settings file
 
 ### 1.0.0
 
-首个公开版本，完整条目见 [CHANGELOG.md](CHANGELOG.md)。
+First public release. See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
-- 文件 / 日记双模式同步，智能 / 增量 / 强制三种操作，可取消、断点续传
-- 多账户独立配置，同目录自动加账户名前缀；标签过滤、跳过归档、同步天数窗口
-- 本地修改与删除保护，`_冲突/` 备份与 `_已删除/` 归档
-- 发送选中文本 / 当前笔记 / 快速记录三条反向同步命令
-- AI 整理：多供应商、自定义提示词、自动标签与智能摘要
-- 中英双语设置界面；47 个自动化用例
+- File and daily-note sync modes with smart / incremental / force runs, cancellable and resumable
+- Per-account configuration with automatic account prefixes, tag filters, skip-archived and sync-day window
+- Local edit and delete protection, `_冲突/` backups and `_已删除/` archive
+- Reverse sync: send selection, send current note and quick capture
+- AI cleanup with multiple providers, auto tags and summaries
+- Bilingual settings UI; 47 automated test cases
 
 ---
 
-## 许可
+## License
 
 [MIT](LICENSE)
