@@ -1,0 +1,22 @@
+# 依赖
+node_modules/
+
+# 构建/部署副本（main.js、manifest.json、styles.css 会提交到仓库根目录用于发布）
+plugins/
+
+# 本地插件设置（含账户地址与 API 令牌，切勿提交）
+data.json
+
+# 临时目录与调试产物
+.screenshots/
+.tmp_test/
+*.log
+*.tmp
+
+# 内部开发文档（仅本地保留）
+docs/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
