@@ -128,6 +128,11 @@ Build output is `main.js`, `manifest.json`, `styles.css`. Copy them into a test 
 
 ## Changelog
 
+### 1.0.2
+
+- Rewrote the built-in AI prompt: keep the original language and preserve links, code, task checkboxes and existing tags; no padding or added headings
+- The built-in prompt is now bilingual and follows the interface language
+
 ### 1.0.1
 
 - English plugin description, matching the community directory requirements

@@ -2,8 +2,8 @@
 
 import { Notice, Setting } from 'obsidian';
 import type { AIProvider } from '../../types';
-import { DEFAULT_PROMPT, isDefaultPrompt } from '../../domain/prompt';
-import { t } from '../../i18n/t';
+import { buildDefaultPrompt, isDefaultPrompt } from '../../domain/prompt';
+import { getLanguage, t } from '../../i18n/t';
 import type { SettingsContext } from '../context';
 import { dropdownField, passwordField, sectionCard, textField, toggleField } from '../dom';
 
@@ -154,12 +154,15 @@ export function renderAISection(ctx: SettingsContext): void {
       }));
   testSetting.settingEl.addClass('memos-hub-ai-test');
 
+  let refreshPromptText = (): void => {};
+
   toggleField(body, {
     name: t('AI_AUTO_TAGS_NAME'),
     desc: t('AI_AUTO_TAGS_DESC'),
     value: ai.autoTags,
     onChange: value => {
       ai.autoTags = value;
+      refreshPromptText();
       void host.saveSettings();
     },
   });
@@ -170,6 +173,7 @@ export function renderAISection(ctx: SettingsContext): void {
     value: ai.autoSummary,
     onChange: value => {
       ai.autoSummary = value;
+      refreshPromptText();
       void host.saveSettings();
     },
   });
@@ -180,19 +184,25 @@ export function renderAISection(ctx: SettingsContext): void {
   const nameBlock = header.createDiv();
   nameBlock.createDiv({ cls: 'setting-item-name', text: t('AI_PROMPT_NAME') });
   nameBlock.createDiv({ cls: 'setting-item-description', text: t('AI_PROMPT_DESC') });
+  const defaultPromptText = (): string => buildDefaultPrompt(ai.autoTags, ai.autoSummary, getLanguage());
+
   const reset = header.createEl('button', { cls: 'memos-hub-prompt-reset-btn', text: t('BTN_RESET_PROMPT') });
   reset.addEventListener('click', () => {
-    ai.promptTemplate = DEFAULT_PROMPT;
-    textarea.value = DEFAULT_PROMPT;
+    ai.promptTemplate = '';
+    textarea.value = defaultPromptText();
     void host.saveSettings();
     new Notice(t('PROMPT_RESET'));
   });
 
   const control = wrapper.createDiv({ cls: 'setting-item-control memos-hub-prompt-control' });
   const textarea = control.createEl('textarea', { cls: 'memos-hub-prompt-textarea' });
-  textarea.value = isDefaultPrompt(ai.promptTemplate) ? DEFAULT_PROMPT : ai.promptTemplate;
+  textarea.value = isDefaultPrompt(ai.promptTemplate) ? defaultPromptText() : ai.promptTemplate;
+  refreshPromptText = () => {
+    if (isDefaultPrompt(ai.promptTemplate)) textarea.value = defaultPromptText();
+  };
   textarea.addEventListener('change', () => {
-    ai.promptTemplate = textarea.value.trim() || DEFAULT_PROMPT;
+    const value = textarea.value.trim();
+    ai.promptTemplate = isDefaultPrompt(value) ? '' : value;
     void host.saveSettings();
   });
 }

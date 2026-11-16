@@ -10,7 +10,7 @@ import type {
   StorageMode,
   SyncFailureInfo,
 } from '../types';
-import { DEFAULT_PROMPT } from '../domain/prompt';
+import { isDefaultPrompt } from '../domain/prompt';
 
 export const FILE_NAME_FORMAT_DEFAULT = 'YYYY-MM-DD HH-mm-ss';
 export const DAILY_HEADER_DEFAULT = '## 📓 Memos';
@@ -32,7 +32,7 @@ export function createDefaultAISettings(): AISettings {
     customModelName: '',
     autoTags: true,
     autoSummary: false,
-    promptTemplate: DEFAULT_PROMPT,
+    promptTemplate: '',
   };
 }
 
@@ -141,7 +141,7 @@ function normalizeAISettings(raw: unknown): AISettings {
     autoSummary: boolOr(source.autoSummary, defaults.autoSummary),
     promptTemplate: (() => {
       const value = stringOr(source.promptTemplate, defaults.promptTemplate);
-      return value.trim() ? value : DEFAULT_PROMPT;
+      return isDefaultPrompt(value) ? '' : value;
     })(),
   };
 }

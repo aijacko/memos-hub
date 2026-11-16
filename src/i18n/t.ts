@@ -6,6 +6,9 @@ import { zh } from './zh';
 import { en } from './en';
 
 let dictionary: Record<TranslationKey, string> = zh;
+let language: Language = 'zh';
+
+export type Language = 'zh' | 'en';
 
 function detectLanguage(): void {
   let locale = '';
@@ -19,12 +22,18 @@ function detectLanguage(): void {
   }
   const lowered = locale.toLowerCase();
   // Only Chinese has a translation; every other language falls back to English.
-  dictionary = lowered.startsWith('zh') ? zh : en;
+  language = lowered.startsWith('zh') ? 'zh' : 'en';
+  dictionary = language === 'zh' ? zh : en;
 }
 
 /** Pick the dictionary from the current Obsidian locale. */
 export function initLanguage(): void {
   detectLanguage();
+}
+
+/** Current UI language, used to pick localized default content. */
+export function getLanguage(): Language {
+  return language;
 }
 
 export function t(key: TranslationKey, params?: TranslationParams): string {

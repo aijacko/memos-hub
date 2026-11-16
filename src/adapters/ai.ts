@@ -2,8 +2,8 @@
 
 import { requestUrl } from 'obsidian';
 import type { AISettings, AIProvider } from '../types';
-import { buildDefaultPrompt, DEFAULT_PROMPT } from '../domain/prompt';
-import { t } from '../i18n/t';
+import { buildDefaultPrompt, isDefaultPrompt } from '../domain/prompt';
+import { getLanguage, t } from '../i18n/t';
 import { errorMessage, withTimeout } from './http';
 
 const REQUEST_TIMEOUT_MS = 60000;
@@ -126,16 +126,16 @@ export class AIService {
     if (!base || !model) return content;
 
     const template = this.settings.promptTemplate ?? '';
-    const useDefault = !template.trim() || template === DEFAULT_PROMPT || template === buildDefaultPrompt(true, false);
+    const useDefault = isDefaultPrompt(template);
 
     let systemPrompt: string;
     let userMessage: string;
     if (useDefault) {
-      systemPrompt = buildDefaultPrompt(this.settings.autoTags, this.settings.autoSummary);
+      systemPrompt = buildDefaultPrompt(this.settings.autoTags, this.settings.autoSummary, getLanguage());
       userMessage = content;
     } else if (/\{\{content\}\}/.test(template)) {
       systemPrompt = template.replace(/\{\{content\}\}/g, content);
-      userMessage = '请整理以上内容。';
+      userMessage = t('AI_CLEAN_INSTRUCTION');
     } else {
       systemPrompt = template;
       userMessage = content;

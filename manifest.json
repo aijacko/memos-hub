@@ -1,7 +1,7 @@
 {
   "id": "memos-hub",
   "name": "Memos Hub",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minAppVersion": "1.8.7",
   "description": "Sync Memos notes into Obsidian and send Obsidian notes back to Memos, with multi-account support, daily notes or one file per memo, tag filters and AI cleanup.",
   "author": "aijacko",

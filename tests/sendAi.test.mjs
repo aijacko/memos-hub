@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { sendMemo } from '../src/features/sender';
 import { AIService } from '../src/adapters/ai';
 import { createDefaultSettings, createDefaultAISettings } from '../src/state/settings';
-import { buildDefaultPrompt, DEFAULT_PROMPT, isDefaultPrompt } from '../src/domain/prompt';
+import { buildDefaultPrompt, isDefaultPrompt } from '../src/domain/prompt';
 
 function profile() {
   return {
@@ -82,9 +82,22 @@ test('case 34b: a disabled AI service is a no-op and the default prompt is prese
   const original = '关闭 AI 时正文必须逐字保留，不做任何改写。';
   assert.equal(await service.clean(original), original);
 
-  assert.equal(isDefaultPrompt(DEFAULT_PROMPT), true);
-  assert.equal(DEFAULT_PROMPT, buildDefaultPrompt(true, false));
-  assert.ok(DEFAULT_PROMPT.trim().length > 20);
+  const zhPrompt = buildDefaultPrompt(true, false, 'zh');
+  assert.equal(isDefaultPrompt(zhPrompt), true);
+  assert.equal(isDefaultPrompt(''), true);
+  assert.ok(zhPrompt.trim().length > 20);
+});
+
+test('case 42: the built-in prompt follows the interface language', () => {
+  const zh = buildDefaultPrompt(true, true, 'zh');
+  const en = buildDefaultPrompt(true, true, 'en');
+  assert.notEqual(zh, en);
+  assert.match(zh, /笔记整理助手/);
+  assert.match(en, /Markdown note editor/);
+  assert.match(en, /#tag/);
+  assert.equal(isDefaultPrompt(en), true);
+  assert.equal(isDefaultPrompt(zh), true);
+  assert.equal(isDefaultPrompt('自定义提示词：整理后输出。'), false);
 });
 
 test('case 34c: the model list is fetched from the OpenAI-compatible endpoint', async () => {
