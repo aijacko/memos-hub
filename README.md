@@ -149,7 +149,7 @@ First public release. See [CHANGELOG.md](CHANGELOG.md) for the full list.
 - Local edit and delete protection, `_冲突/` backups and `_已删除/` archive
 - Reverse sync: send selection, send current note and quick capture
 - AI cleanup with multiple providers, auto tags and summaries
-- Bilingual settings UI; 47 automated test cases
+- Bilingual settings UI; 48 automated test cases
 
 ---
 
