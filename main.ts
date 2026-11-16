@@ -147,6 +147,7 @@ export default class MemosHubPlugin extends Plugin implements SettingsUiHost {
     delete this.settings.lastSyncDateByProfile[profileId];
     delete this.settings.ignoredMemoIds[profileId];
     delete this.settings.knownMemoIds[profileId];
+    delete this.settings.headerMissDays[profileId];
     await this.saveSettings();
     this.rerenderSettings();
   }

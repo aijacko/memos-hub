@@ -1,9 +1,9 @@
 {
   "id": "memos-hub",
   "name": "Memos Hub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "1.8.7",
-  "description": "把 Memos 备忘同步到本地库：多账户、文件/日记双模式、发送笔记回 Memos、AI 整理、YAML 属性与标签过滤。",
+  "description": "Sync Memos notes into Obsidian and send Obsidian notes back to Memos, with multi-account support, daily notes or one file per memo, tag filters and AI cleanup.",
   "author": "aijacko",
   "authorUrl": "https://github.com/aijacko",
   "isDesktopOnly": true
