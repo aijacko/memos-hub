@@ -2,7 +2,7 @@
 
 Sync your [Memos](https://github.com/usememos/memos) into Obsidian — and send notes from Obsidian back to Memos.
 
-Multi-account support, **per-file** and **daily-note** storage, incremental sync, optional **AI cleanup**, tag/archive filtering, attachment download, plus safeguards for locally edited and locally deleted notes.
+**Multiple accounts**, two storage modes (**one file per memo** or **daily notes**), three ways to **sync Memos into your vault**, three ways to **send vault content to Memos**, optional **AI cleanup**, **tag and archive filtering**, **attachment download**, plus protection against overwritten local edits and re-created deleted notes.
 
 English | [简体中文](README-zh.md)
 
